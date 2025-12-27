@@ -9,9 +9,7 @@ bool is_console_command(command_type t) {
 }
 
 void add_to_command_queue(sys::state& state, command_data& p) {
-#ifndef NDEBUG
 	assert(command::can_perform_command(state, p));
-#endif
 	bool b = state.incoming_commands.try_push(p);
 }
 

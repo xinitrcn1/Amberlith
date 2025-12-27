@@ -65,103 +65,52 @@ struct image {
 	}
 };
 
-#ifndef NDEBUG
-inline void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity,
-		GLsizei, // length
-		GLchar const* message, void const*) {
-
-	std::string source_str;
-	switch(source) {
-	case GL_DEBUG_SOURCE_API:
-		source_str = "OpenGL API call";
-		break;
-	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-		source_str = "Window system API";
-		break;
-	case GL_DEBUG_SOURCE_SHADER_COMPILER:
-		source_str = "Shading language compiler";
-		break;
-	case GL_DEBUG_SOURCE_THIRD_PARTY:
-		source_str = "Application associated with OpenGL";
-		break;
-	case GL_DEBUG_SOURCE_APPLICATION:
-		source_str = "User generated";
-		break;
-	case GL_DEBUG_SOURCE_OTHER:
-		source_str = "Unknown source";
-		break;
-	default:
-		break;
-	}
-	std::string error_type;
-	switch(type) {
-	case GL_DEBUG_TYPE_ERROR:
-		error_type = "General error";
-		break;
-	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-		error_type = "Deprecated behavior";
-		break;
-	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-		error_type = "Undefined behavior";
-		break;
-	case GL_DEBUG_TYPE_PORTABILITY:
-		error_type = "Portability issue";
-		break;
-	case GL_DEBUG_TYPE_PERFORMANCE:
-		error_type = "Performance issue";
-		break;
-	case GL_DEBUG_TYPE_MARKER:
-		error_type = "Command stream annotation";
-		break;
-	case GL_DEBUG_TYPE_PUSH_GROUP:
-		error_type = "Error group push";
-		break;
-	case GL_DEBUG_TYPE_POP_GROUP:
-		error_type = "Error group pop";
-		break;
-	case GL_DEBUG_TYPE_OTHER:
-		error_type = "Unknown error type";
-		break;
-	default:
-		break;
-	}
-	std::string severity_str;
-	switch(severity) {
-	case GL_DEBUG_SEVERITY_HIGH:
-		severity_str = "High";
-		break;
-	case GL_DEBUG_SEVERITY_MEDIUM:
-		severity_str = "Medium";
-		break;
-	case GL_DEBUG_SEVERITY_LOW:
-		severity_str = "Low";
-		break;
-	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		severity_str = "Notification";
-		return; // don't print notifications
-	default:
-		break;
-	}
-	std::string full_message("OpenGL error ");
-	full_message += std::to_string(id);
-	full_message += " ";
-	full_message += "; Source: ";
-	full_message += source_str;
-	full_message += " ; Type: ";
-	full_message += error_type;
-	full_message += "; Severity: ";
-	full_message += severity_str;
-	full_message += "; ";
-	full_message += message;
-	full_message += "\n";
-
+inline void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, [[maybe_unused]] GLsizei length, GLchar const* message, void const*) {
+	char const* source_str = [source]{
+		switch(source) {
+		case GL_DEBUG_SOURCE_API: return "OpenGL API call";
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "Window system API";
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: return "Shading language compiler";
+		case GL_DEBUG_SOURCE_THIRD_PARTY: return "Application associated with OpenGL";
+		case GL_DEBUG_SOURCE_APPLICATION: return "User generated";
+		case GL_DEBUG_SOURCE_OTHER: return "Other source";
+		default: return "Unknown source";
+		}
+	}();
+	char const* error_type = [type]{
+		switch(type) {
+		case GL_DEBUG_TYPE_ERROR: return "General error";
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated behavior";
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "Undefined behavior";
+		case GL_DEBUG_TYPE_PORTABILITY: return "Portability issue";
+		case GL_DEBUG_TYPE_PERFORMANCE: return "Performance issue";
+		case GL_DEBUG_TYPE_MARKER: return "Command stream annotation";
+		case GL_DEBUG_TYPE_PUSH_GROUP: return "Error group push";
+		case GL_DEBUG_TYPE_POP_GROUP: return "Error group pop";
+		case GL_DEBUG_TYPE_OTHER: return "Other error type";
+		default: return "Unknown error type";
+		}
+	}();
+	char const* severity_str = [severity]{
+		switch(severity) {
+		case GL_DEBUG_SEVERITY_HIGH: return "High";
+		case GL_DEBUG_SEVERITY_MEDIUM: return "Medium";
+		case GL_DEBUG_SEVERITY_LOW: return "Low";
+		case GL_DEBUG_SEVERITY_NOTIFICATION: return "Notification"; // don't print notifications
+		default: return "?";
+		}
+	}();
 #ifdef _WIN32
+	std::string full_message = std::string("OpenGL error ") + std::to_string(id)
+		+ " ; Source: " + source_str
+		+ " ; Type: " + error_type
+		+ "; Severity: " + severity_str
+		+ "; " + message + '\n';
 	OutputDebugStringA(full_message.c_str());
 #else
-	printf("%s", full_message.c_str());
+	printf("OpenGL error: %i; Source: %s; Type: %s; Severity: %s; %s\n", id, source_str, error_type, severity_str, message);
 #endif
 }
-#endif
 
 struct data {
 	tagged_vector<texture, dcon::texture_id> asset_textures;
