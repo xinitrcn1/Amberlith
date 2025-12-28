@@ -106,6 +106,22 @@ void place_in_drag_and_drop(sys::state& state, element_base& elm, std::any const
 int32_t ui_width(sys::state const& state);
 int32_t ui_height(sys::state const& state);
 
+inline ogl::color_modification get_color_modification(bool is_under_mouse, bool is_disabled, bool is_interactable) {
+	if(!is_under_mouse || !is_interactable) {
+		if(is_disabled) {
+			return ogl::color_modification::disabled;
+		} else {
+			return ogl::color_modification::none;
+		}
+	} else {
+		if(is_disabled) {
+			return ogl::color_modification::interactable_disabled;
+		} else {
+			return ogl::color_modification::interactable;
+		}
+	}
+}
+
 //void create_in_game_windows(sys::state& state);
 
 } // namespace ui

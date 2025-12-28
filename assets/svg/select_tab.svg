@@ -20,9 +20,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="17.71"
-     inkscape:cx="49.971767"
-     inkscape:cy="50"
+     inkscape:zoom="6.2614306"
+     inkscape:cx="125.61027"
+     inkscape:cy="61.886816"
      inkscape:window-width="3840"
      inkscape:window-height="2054"
      inkscape:window-x="2869"
@@ -31,13 +31,14 @@
      inkscape:current-layer="svg300" />
   <g
      id="g1"
-     transform="matrix(0.80134602,0,0,0.65697346,11.025086,17.151327)">
+     transform="matrix(0.80134602,0,0,0.65697346,16.025086,17.151327)">
     <path
        id="path2"
        fill="#000000"
        stroke-width="1"
        stroke-opacity="0"
        class="primarycolor"
-       d="m 14,16 v 68 a 6,6 45 0 0 6,6 h 48 a 10.757007,10.757007 150.84827 0 0 9.152522,-5.105057 L 95.54865,55.105057 a 9.7161382,9.7161382 90 0 0 0,-10.210114 L 77.152522,15.105057 A 10.757007,10.757007 29.151727 0 0 68,10 H 20 a 6,6 135 0 0 -6,6 z" />
+       d="M 29.918304,50 14.9435,103.2746 H 46.141009 L 61.115814,50 46.141009,-3.8960333 14.9435,-3.2746026 Z"
+       sodipodi:nodetypes="ccccccc" />
   </g>
 </svg>

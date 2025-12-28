@@ -945,4 +945,6 @@ int8_t cmp3(T const& a, T const& b) {
 
 text::alignment convert_align(template_project::aui_text_alignment a);
 
+std::unique_ptr<ui::element_base> make_main_menu_base(sys::state& state);
+
 }

@@ -469,7 +469,7 @@ void create_window(sys::state& game_state, creation_parameters const& params) {
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.hIcon = (HICON)LoadImage(GetModuleHandleW(nullptr), MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON,
 		GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
-	wcex.lpszClassName = NATIVE_PROGRAM_NAME;
+	wcex.lpszClassName = L"GenericAliceUIWindow";
 	if(RegisterClassExW(&wcex) == 0) {
 		window::emit_error_message("Unable to register window class", true);
 	}
@@ -478,7 +478,7 @@ void create_window(sys::state& game_state, creation_parameters const& params) {
 																												 WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS)
 																									 : WS_VISIBLE | WS_BORDER | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-	game_state.win_ptr->hwnd = CreateWindowExW(0, NATIVE_PROGRAM_NAME, NATIVE_PROGRAM_NAME, win32Style, CW_USEDEFAULT,
+	game_state.win_ptr->hwnd = CreateWindowExW(0, L"GenericAliceUIWindow", NATIVE_PROGRAM_NAME, win32Style, CW_USEDEFAULT,
 			CW_USEDEFAULT, 0, 0, NULL, NULL, GetModuleHandleW(nullptr), &game_state);
 
 	if(!game_state.win_ptr->hwnd)
@@ -563,79 +563,25 @@ void create_window(sys::state& game_state, creation_parameters const& params) {
 }
 
 void change_cursor(sys::state& state, cursor_type type) {
-	auto root = simple_fs::get_root(state.common_fs);
-	auto gfx_dir = simple_fs::open_directory(root, NATIVE("gfx"));
-	auto cursors_dir = simple_fs::open_directory(gfx_dir, NATIVE("cursors"));
-
 	if(state.win_ptr->cursors[uint8_t(type)] == HCURSOR(NULL)) {
-		native_string_view fname = NATIVE("normal.cur");
 		switch(type) {
 		case cursor_type::normal:
-			fname = NATIVE("normal.cur");
-			break;
+			state.win_ptr->cursors[uint8_t(type)] = LoadCursor(NULL, IDC_ARROW);
+			SetCursor(state.win_ptr->cursors[uint8_t(type)]);
+			SetClassLongPtr(state.win_ptr->hwnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(state.win_ptr->cursors[uint8_t(type)]));
+			return;
 		case cursor_type::busy:
-			fname = NATIVE("busy.ani");
-			break;
-		case cursor_type::drag_select:
-			fname = NATIVE("dragselect.ani");
-			break;
-		case cursor_type::hostile_move:
-			fname = NATIVE("attack_move.ani");
-			break;
-		case cursor_type::friendly_move:
-			fname = NATIVE("friendly_move.ani");
-			break;
-		case cursor_type::no_move:
-			fname = NATIVE("no_move.ani");
-			break;
+			state.win_ptr->cursors[uint8_t(type)] = LoadCursor(NULL, IDC_WAIT);
+			SetCursor(state.win_ptr->cursors[uint8_t(type)]);
+			SetClassLongPtr(state.win_ptr->hwnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(state.win_ptr->cursors[uint8_t(type)]));
+			return;
 		case cursor_type::text:
 			state.win_ptr->cursors[uint8_t(type)] = LoadCursor(NULL, IDC_IBEAM);
 			SetCursor(state.win_ptr->cursors[uint8_t(type)]);
 			SetClassLongPtr(state.win_ptr->hwnd, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(state.win_ptr->cursors[uint8_t(type)]));
 			return;
 		default:
-			fname = NATIVE("normal.cur");
 			break;
-		}
-
-		// adapted from https://stackoverflow.com/questions/34065/how-to-read-a-value-from-the-windows-registry
-
-		HKEY hKey;
-		auto response = RegOpenKeyExW(HKEY_CURRENT_USER, NATIVE("Software\\Microsoft\\Accessibility"), 0, KEY_READ, &hKey);
-		bool exists = (response == ERROR_SUCCESS);
-		auto cursor_size_key = NATIVE("CursorSize");
-
-		uint32_t cursor_size = 1;
-
-		if(exists) {
-			DWORD dwBufferSize(sizeof(DWORD));
-			DWORD nResult(0);
-			LONG get_cursor_size_error = RegQueryValueExW(hKey,
-				cursor_size_key,
-				0,
-				NULL,
-				reinterpret_cast<LPBYTE>(&nResult),
-				&dwBufferSize);
-			if(get_cursor_size_error == ERROR_SUCCESS) {
-				cursor_size = nResult;
-			}
-		}
-
-		RegCloseKey(hKey);
-
-		if(auto f = simple_fs::peek_file(cursors_dir, fname); f) {
-			auto path = simple_fs::get_full_name(*f);
-			state.win_ptr->cursors[uint8_t(type)] = (HCURSOR)LoadImageW(nullptr, path.c_str(), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE); //.cur or .ani
-
-			if(state.win_ptr->cursors[uint8_t(type)] == HCURSOR(NULL)) {
-				state.win_ptr->cursors[uint8_t(type)] = LoadCursor(nullptr, IDC_ARROW); //default system cursor
-				state.ui_state.cursor_size = GetSystemMetrics(SM_CXCURSOR) * cursor_size / 2;
-			} else {
-				state.ui_state.cursor_size = GetSystemMetrics(SM_CXCURSOR) * cursor_size / 2;
-			}
-		} else {
-			state.win_ptr->cursors[uint8_t(type)] = LoadCursor(nullptr, IDC_ARROW); //default system cursor
-			state.ui_state.cursor_size = GetSystemMetrics(SM_CXCURSOR) * cursor_size / 2;
 		}
 	}
 	SetCursor(state.win_ptr->cursors[uint8_t(type)]);

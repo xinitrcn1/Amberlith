@@ -167,8 +167,8 @@ enum class key_modifiers : uint8_t {
 constexpr inline float ui_scales[] = {
 	0.25f,
 	0.50f,
-	0.75f, 0.80f, 0.85f, 0.90f, 0.95f,
-	1.00f, 1.05f, 1.10f, 1.15f, 1.20f,
+	0.75f,
+	1.00f,
 	1.25f,
 	1.50f,
 	1.75f,

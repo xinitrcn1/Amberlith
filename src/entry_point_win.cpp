@@ -33,6 +33,8 @@ int WINAPI wWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPWSTR
 	if(SUCCEEDED(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED))) {
 		// do everything here: create a window, read messages
 
+		add_root(game_state.common_fs, NATIVE("."));
+
 		int num_params = 0;
 		auto parsed_cmd = CommandLineToArgvW(GetCommandLineW(), &num_params);
 
