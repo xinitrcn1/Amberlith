@@ -1,8 +1,8 @@
 display_name = "English (US)"
 script = Latn
 
-body_font = LibreCaslonText-Regular.ttf
+body_font = Lato-Regular.ttf
 
-header_font = SourceSerif4Subhead-Regular.otf
+header_font = Lato-Bold.ttf
 
 rtl = no

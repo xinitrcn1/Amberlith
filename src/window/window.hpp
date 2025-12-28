@@ -105,10 +105,6 @@ bool is_key_depressed(sys::state const& game_state, sys::virtual_key key); // wh
 enum class cursor_type : uint8_t {
 	normal,
 	busy,
-	drag_select,
-	hostile_move,
-	friendly_move,
-	no_move,
 	text
 };
 void change_cursor(sys::state& state, cursor_type type);

@@ -1,1 +1,13 @@
-test;test
+exit;Exit
+graphics_options;Graphics Options
+sound_options;Sound Options
+controls_options;Other Options
+master_volume_label;Master Volume
+music_volume_label;Music Volume
+interface_volume_label;Interface Volume
+mute_on_focus_lost_label;Mute when focus is lost
+language_label;Language
+tooltip_mode_label;Tooltip follows cursor
+edge_scrolling_label;Scroll when mouse is near edge
+ui_scale;UI Scale
+window_mode_label;Fullscreen

@@ -53,7 +53,7 @@ void start_dragging(sys::state& state, int32_t x, int32_t y, sys::key_modifiers 
 	state.x_drag_start = x;
 	state.y_drag_start = y;
 	state.drag_selecting = true;
-	window::change_cursor(state, window::cursor_type::drag_select);
+	//window::change_cursor(state, window::cursor_type::normal);
 }
 
 void stop_dragging(sys::state& state, int32_t x, int32_t y, sys::key_modifiers mod) {
@@ -198,9 +198,8 @@ void in_game_hotkeys(sys::state& state, sys::virtual_key keycode, sys::key_modif
 	if(state.ui_state.root->impl_on_key_down(state, keycode, mod) != ui::message_result::consumed) {
 		uint32_t ctrl_group = 0;
 		if(keycode == sys::virtual_key::ESCAPE) {
-			//
+			alice_ui::display_at_front<alice_ui::make_main_menu_base>(state);
 		}
-
 		if(keycode == sys::virtual_key::LEFT || keycode == sys::virtual_key::RIGHT || keycode == sys::virtual_key::UP || keycode == sys::virtual_key::DOWN) {
 			if(state.ui_state.mouse_sensitive_target) {
 				state.ui_state.mouse_sensitive_target->set_visible(state, false);

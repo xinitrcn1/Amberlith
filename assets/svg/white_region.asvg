@@ -4,5 +4,6 @@
 	width = "[[W;1000;0]]" 
 	height = "[[H;1000;0]]" >  
 	
-	<rect fill="#fef7f0" x="0" y="0" width="[[W;1000;0]]" height="[[H;1000;0]]" />
+	<rect fill="#263336" x="0" y="0" width="[[W;1000;0]]" height="[[H;1000;0]]" />
+	
 </svg>
