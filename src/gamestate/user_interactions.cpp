@@ -12,15 +12,14 @@ void on_mouse_wheel(sys::state& state, int32_t x, int32_t y, key_modifiers mod, 
 
 	state.ui_state.scroll_target = probe_result.under_mouse;
 
-
 	if(state.ui_state.scroll_target != nullptr) {
 		state.ui_state.scroll_target->impl_on_scroll(state, probe_result.relative_location.x, probe_result.relative_location.y, amount, mod);
 	} else if(state.ui_state.under_mouse == nullptr) {
-
 		if(state.ui_state.mouse_sensitive_target) {
 			state.ui_state.mouse_sensitive_target->set_visible(state, false);
 			state.ui_state.mouse_sensitive_target = nullptr;
 		}
+		state.current_scene.on_scroll(state, x, y, mod, amount);
 	}
 }
 

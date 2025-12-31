@@ -102,6 +102,11 @@ void state::on_resize(int32_t x, int32_t y, window::window_state win_state) {
 			elm.base_data.size.x = int16_t(x / user_settings.ui_scale);
 			elm.base_data.size.y = int16_t(y / user_settings.ui_scale);
 		});
+
+		if(current_scene.id == game_scene::scene_id::in_game_basic) {
+			auto ptr = alice_ui::display_at_front<alice_ui::make_tool_pane_main_panel>(*this, alice_ui::display_closure_command::return_pointer);
+			ptr->base_data.size.y = int16_t(y / user_settings.ui_scale - ptr->base_data.position.y);
+		}
 	}
 }
 
@@ -255,7 +260,7 @@ void state::render() { // called to render the frame may (and should) delay retu
 			ui_state.under_mouse->on_hover(*this);
 	}
 
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	glClearColor(0.1490f, 0.2f, 0.2118f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -354,6 +359,8 @@ void state::on_create() {
 		}
 	}
 
+
+	game_scene::switch_scene(*this, game_scene::scene_id::in_game_basic);
 }
 //
 // string pool functions

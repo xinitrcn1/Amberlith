@@ -6,6 +6,7 @@
 #include "gui_element_types.hpp"
 #include "gui_deserialize.hpp"
 #include "alice_ui.hpp"
+#include "uitemplate.hpp"
 
 namespace alice_ui {
 
@@ -193,6 +194,107 @@ void template_icon_button::on_hover_end(sys::state& state) noexcept {
 	button_on_hover_end(state);
 }
 
+void template_icon_button_ci::render(sys::state& state, int32_t x, int32_t y) noexcept {
+	if(template_id == -1)
+		return;
+
+	grid_size_window* par = static_cast<grid_size_window*>(parent);
+	auto ms_after = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - last_activated);
+	if(disabled) {
+		auto bg_id = state.ui_templates.iconic_button_t[template_id].disabled.bg;
+		if(bg_id != -1) {
+			ogl::render_textured_rect_direct(state, float(x), float(y), float(base_data.size.x), float(base_data.size.y),
+				state.ui_templates.backgrounds[bg_id].renders.get_render(state, float(base_data.size.x) / float(par->grid_size), float(base_data.size.y) / float(par->grid_size), int32_t(par->grid_size), state.user_settings.ui_scale));
+		}
+		if(icon != -1) {
+			auto ico_color = state.ui_templates.iconic_button_t[template_id].disabled.icon_color;
+			auto l = state.ui_templates.iconic_button_t[template_id].disabled.icon_left.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+			auto t = state.ui_templates.iconic_button_t[template_id].disabled.icon_top.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+			auto r = state.ui_templates.iconic_button_t[template_id].disabled.icon_right.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+			auto b = state.ui_templates.iconic_button_t[template_id].disabled.icon_bottom.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+			ogl::render_textured_rect_direct(state, l, t, r - l, b - t,
+				state.ui_templates.icons[icon].renders.get_render(state, int32_t(r - l), int32_t(b - t), state.user_settings.ui_scale, icon_color.r, icon_color.g, icon_color.b));
+		}
+	} else if(ms_after.count() < mouse_over_animation_ms && state.ui_templates.iconic_button_t[template_id].animate_active_transition) {
+		float percentage = float(ms_after.count()) / float(mouse_over_animation_ms);
+		if(this == state.ui_state.under_mouse) {
+			auto active_id = state.ui_templates.iconic_button_t[template_id].active.bg;
+			if(active_id != -1) {
+				ogl::render_rect_slice(state, float(x), float(y), float(base_data.size.x), float(base_data.size.y),
+					state.ui_templates.backgrounds[active_id].renders.get_render(state, float(base_data.size.x) / float(par->grid_size), float(base_data.size.y) / float(par->grid_size), int32_t(par->grid_size), state.user_settings.ui_scale),
+					0.0f, percentage);
+			}
+			auto bg_id = state.ui_templates.iconic_button_t[template_id].primary.bg;
+			if(bg_id != -1) {
+				ogl::render_rect_slice(state, float(x), float(y), float(base_data.size.x), float(base_data.size.y),
+					state.ui_templates.backgrounds[bg_id].renders.get_render(state, float(base_data.size.x) / float(par->grid_size), float(base_data.size.y) / float(par->grid_size), int32_t(par->grid_size), state.user_settings.ui_scale),
+					percentage, 1.0f);
+			}
+			if(icon != -1) {
+				auto ico_color = state.ui_templates.iconic_button_t[template_id].active.icon_color;
+				auto l = state.ui_templates.iconic_button_t[template_id].active.icon_left.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+				auto t = state.ui_templates.iconic_button_t[template_id].active.icon_top.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+				auto r = state.ui_templates.iconic_button_t[template_id].active.icon_right.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+				auto b = state.ui_templates.iconic_button_t[template_id].active.icon_bottom.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+				ogl::render_textured_rect_direct(state, l, t, r - l, b - t,
+					state.ui_templates.icons[icon].renders.get_render(state, int32_t(r - l), int32_t(b - t), state.user_settings.ui_scale, icon_color.r, icon_color.g, icon_color.b));
+			}
+		} else {
+			auto active_id = state.ui_templates.iconic_button_t[template_id].active.bg;
+			if(active_id != -1) {
+				ogl::render_rect_slice(state, float(x), float(y), float(base_data.size.x), float(base_data.size.y),
+					state.ui_templates.backgrounds[active_id].renders.get_render(state, float(base_data.size.x) / float(par->grid_size), float(base_data.size.y) / float(par->grid_size), int32_t(par->grid_size), state.user_settings.ui_scale),
+					percentage, 1.0f);
+			}
+			auto bg_id = state.ui_templates.iconic_button_t[template_id].primary.bg;
+			if(bg_id != -1) {
+				ogl::render_rect_slice(state, float(x), float(y), float(base_data.size.x), float(base_data.size.y),
+					state.ui_templates.backgrounds[bg_id].renders.get_render(state, float(base_data.size.x) / float(par->grid_size), float(base_data.size.y) / float(par->grid_size), int32_t(par->grid_size), state.user_settings.ui_scale),
+					0.0f, percentage);
+			}
+
+			if(icon != -1) {
+				auto ico_color = state.ui_templates.iconic_button_t[template_id].primary.icon_color;
+				auto l = state.ui_templates.iconic_button_t[template_id].primary.icon_left.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+				auto t = state.ui_templates.iconic_button_t[template_id].primary.icon_top.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+				auto r = state.ui_templates.iconic_button_t[template_id].primary.icon_right.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+				auto b = state.ui_templates.iconic_button_t[template_id].primary.icon_bottom.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+				ogl::render_textured_rect_direct(state, l, t, r - l, b - t,
+					state.ui_templates.icons[icon].renders.get_render(state, int32_t(r - l), int32_t(b - t), state.user_settings.ui_scale, icon_color.r, icon_color.g, icon_color.b));
+			}
+		}
+	} else if(this == state.ui_state.under_mouse) {
+		auto active_id = state.ui_templates.iconic_button_t[template_id].active.bg;
+		if(active_id != -1) {
+			ogl::render_textured_rect_direct(state, float(x), float(y), float(base_data.size.x), float(base_data.size.y),
+				state.ui_templates.backgrounds[active_id].renders.get_render(state, float(base_data.size.x) / float(par->grid_size), float(base_data.size.y) / float(par->grid_size), int32_t(par->grid_size), state.user_settings.ui_scale));
+		}
+		if(icon != -1) {
+			auto ico_color = state.ui_templates.iconic_button_t[template_id].active.icon_color;
+			auto l = state.ui_templates.iconic_button_t[template_id].active.icon_left.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+			auto t = state.ui_templates.iconic_button_t[template_id].active.icon_top.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+			auto r = state.ui_templates.iconic_button_t[template_id].active.icon_right.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+			auto b = state.ui_templates.iconic_button_t[template_id].active.icon_bottom.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+			ogl::render_textured_rect_direct(state, l, t, r - l, b - t,
+				state.ui_templates.icons[icon].renders.get_render(state, int32_t(r - l), int32_t(b - t), state.user_settings.ui_scale, icon_color.r, icon_color.g, icon_color.b));
+		}
+	} else {
+		auto bg_id = state.ui_templates.iconic_button_t[template_id].primary.bg;
+		if(bg_id != -1) {
+			ogl::render_textured_rect_direct(state, float(x), float(y), float(base_data.size.x), float(base_data.size.y),
+				state.ui_templates.backgrounds[bg_id].renders.get_render(state, float(base_data.size.x) / float(par->grid_size), float(base_data.size.y) / float(par->grid_size), int32_t(par->grid_size), state.user_settings.ui_scale));
+		}
+		if(icon != -1) {
+			auto ico_color = state.ui_templates.iconic_button_t[template_id].primary.icon_color;
+			auto l = state.ui_templates.iconic_button_t[template_id].primary.icon_left.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+			auto t = state.ui_templates.iconic_button_t[template_id].primary.icon_top.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+			auto r = state.ui_templates.iconic_button_t[template_id].primary.icon_right.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + x;
+			auto b = state.ui_templates.iconic_button_t[template_id].primary.icon_bottom.resolve(float(base_data.size.x), float(base_data.size.y), float(par->grid_size)) + y;
+			ogl::render_textured_rect_direct(state, l, t, r - l, b - t,
+				state.ui_templates.icons[icon].renders.get_render(state, int32_t(r - l), int32_t(b - t), state.user_settings.ui_scale, icon_color.r, icon_color.g, icon_color.b));
+		}
+	}
+}
 
 bool auto_close_button::button_action(sys::state& state) noexcept {
 	state.ui_state.set_focus_target(state, nullptr);
@@ -2514,6 +2616,48 @@ void layout_window_element::remake_layout_internal(layout_level& lvl, sys::state
 	}
 }
 
+std::string_view basic_component_to_name(sys::basic_component_type type) {
+	switch(type) {
+	case sys::basic_component_type::diode:
+		return "diode";
+	case sys::basic_component_type::enable_high_transistor:
+		return "enable_high_transistor";
+	case sys::basic_component_type::enable_low_transistor:
+		return "enable_low_transistor";
+	}
+	return "";
+}
 
+int32_t basic_component_to_icon(sys::state& state, sys::basic_component_type type) {
+	static int32_t dicon = template_project::icon_by_name(state.ui_templates, "diode.svg");
+	static int32_t ehicon = template_project::icon_by_name(state.ui_templates, "npntransistor.svg");
+	static int32_t elicon = template_project::icon_by_name(state.ui_templates, "pnptransistor.svg");
+
+	switch(type) {
+	case sys::basic_component_type::diode:
+		return dicon;
+	case sys::basic_component_type::enable_high_transistor:
+		return ehicon;
+	case sys::basic_component_type::enable_low_transistor:
+		return elicon;
+	}
+	return 0;
+}
+
+int32_t basic_component_to_color(sys::state& state, sys::basic_component_type type) {
+	static int32_t dclr = template_project::color_by_name(state.ui_templates, "blue");
+	static int32_t ehclr = template_project::color_by_name(state.ui_templates, "sky blue");
+	static int32_t elclr = template_project::color_by_name(state.ui_templates, "violet");
+
+	switch(type) {
+	case sys::basic_component_type::diode:
+		return dclr;
+	case sys::basic_component_type::enable_high_transistor:
+		return ehclr;
+	case sys::basic_component_type::enable_low_transistor:
+		return elclr;
+	}
+	return 0;
+}
 
 }

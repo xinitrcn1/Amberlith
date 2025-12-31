@@ -68,7 +68,11 @@ struct alignas(64) state {
 
 	//current ui
 	game_scene::scene_properties current_scene;
-
+	component_type active_component_tool = std::monostate{};
+	wire_colors current_wire_color = wire_colors::amber;
+	int32_t x_offset = 0;
+	int32_t y_offset = 0;
+	int32_t zoom = 8;
 
 	simple_fs::file_system common_fs;                                // file system for looking up graphics assets, etc
 	std::unique_ptr<window::window_data_impl> win_ptr = nullptr;     // platform-dependent window information
@@ -158,7 +162,7 @@ struct alignas(64) state {
 	uint32_t add_locale_data_utf8(std::string_view text);
 
 	state() : untrans_key_to_text_sequence(0, text::vector_backed_ci_hash(key_data), text::vector_backed_ci_eq(key_data)), locale_key_to_text_sequence(0, text::vector_backed_ci_hash(key_data), text::vector_backed_ci_eq(key_data)), incoming_commands(4096) {
-		game_scene::switch_scene(*this, game_scene::scene_id::in_game_basic);
+		game_scene::switch_scene(*this, game_scene::scene_id::loading);
 		key_data.push_back(0);
 	}
 
@@ -166,8 +170,6 @@ struct alignas(64) state {
 
 	void save_user_settings() const;
 	void load_user_settings();
-	void load_gamerule_settings();
-	void save_gamerule_settings() const;
 	void update_ui_scale(float new_scale);
 
 	int get_edit_x();

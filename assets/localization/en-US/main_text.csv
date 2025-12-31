@@ -11,3 +11,8 @@ tooltip_mode_label;Tooltip follows cursor
 edge_scrolling_label;Scroll when mouse is near edge
 ui_scale;UI Scale
 window_mode_label;Fullscreen
+basic_components;Basic Components
+wire;Wire (click to change color)
+diode;Diode
+enable_high_transistor;Enable-high transistor
+enable_low_transistor;Enable-low transistor

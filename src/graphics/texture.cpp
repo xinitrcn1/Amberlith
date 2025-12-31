@@ -899,7 +899,7 @@ GLuint get_late_load_texture_handle(sys::state& state, dcon::texture_id& id, std
 		state.open_gl.asset_textures.emplace_back();
 		id = new_id;
 		state.open_gl.late_loaded_map.insert_or_assign(std::string(asset_name), new_id);
-		native_string nname = native_string(NATIVE("assets")) + NATIVE_DIR_SEPARATOR + simple_fs::utf8_to_native(asset_name);
+		native_string nname = native_string(NATIVE("assets")) + NATIVE_DIR_SEPARATOR + simple_fs::correct_slashes(simple_fs::utf8_to_native(asset_name));
 		return load_file_and_return_handle(nname, state.common_fs, state.open_gl.asset_textures.back(), false);
 	}
 }

@@ -1,6 +1,8 @@
 out vec4 frag_color;
 in vec2 tex_coord;
 
+uniform float screen_width;
+uniform float screen_height;
 uniform vec4 d_rect;
 uniform float border_size;
 uniform vec3 inner_color;
@@ -13,6 +15,24 @@ uniform sampler2D secondary_texture_sampler;
 
 vec4 gamma_correct(vec4 colour) {
 	return vec4(pow(colour.rgb, vec3(1.f / gamma)), colour.a);
+}
+
+vec4 grid_texture(vec2 tc) {
+	float realx = inner_color.x + tc.x * d_rect.z;
+	float realy = inner_color.y + tc.y * d_rect.w;
+	if((0.0f <= realy && realy < 1.0f) || (0.0f <= realx && realx < 1.0f)) {
+		return vec4(0.6078f, 0.4196f, 0.0706f, 1.0f);
+	}
+	float xsubpos = mod(realx, border_size);
+	float ysubpos = mod(realy, border_size);
+	if(xsubpos < 1.0f && ((ysubpos - 0.5f) <= border_size * 0.15f || (ysubpos - 0.5f) >= border_size * 0.85f)) {
+		return vec4(0.6078f, 0.4196f, 0.0706f, 1.0f);
+	}
+	if(ysubpos < 1.0f && ((xsubpos - 0.5f) <= border_size * 0.15f || (xsubpos - 0.5f) >= border_size * 0.85f)) {
+		return vec4(0.6078f, 0.4196f, 0.0706f, 1.0f);
+	}
+	discard;
+	// return vec4(0.1490f, 0.2f, 0.2118f, 1.0f);
 }
 
 //layout(index = 0) subroutine(font_function_class)
@@ -260,6 +280,7 @@ case 23: return stripchart(tc);
 case 24: return triangle_strip(tc);
 case 25: return fixed_size_repeat_border(tc);
 case 26: return corners(tc);
+case 27: return grid_texture(tc);
 default: break;
 	}
 	return vec4(0.f, 0.f, 1.f, 1.f);

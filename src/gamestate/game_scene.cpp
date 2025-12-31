@@ -2,10 +2,14 @@
 #include "simple_fs.hpp"
 #include "user_interactions.hpp"
 #include "alice_ui.hpp"
+#include "opengl_wrapper.hpp"
 
 namespace game_scene {
 
 void in_game_hotkeys(sys::state& state, sys::virtual_key keycode, sys::key_modifiers mod);
+void do_nothing_hotkeys(sys::state& state, sys::virtual_key keycode, sys::key_modifiers mod);
+void render_module_contents(sys::state& state);
+void in_game_scroll(sys::state& state, int32_t x, int32_t y, sys::key_modifiers mod, float amount);
 
 sys::virtual_key replace_keycodes_identity(sys::state& state, sys::virtual_key keycode, sys::key_modifiers mod) {
 	return keycode;
@@ -14,7 +18,25 @@ sys::virtual_key replace_keycodes_identity(sys::state& state, sys::virtual_key k
 
 void switch_scene(sys::state& state, scene_id ui_scene) {
 	switch(ui_scene) {
-		case scene_id::in_game_basic:
+	case scene_id::loading:
+	{
+		state.current_scene = scene_properties{
+			.id = scene_id::loading,
+
+			.get_root = [](sys::state& state) { return state.ui_state.root.get(); },
+			.allow_drag_selection = false,
+			.on_drag_start = do_nothing_screen,
+			.drag_selection = do_nothing_screen,
+			.lbutton_up = do_nothing,
+			.keycode_mapping = replace_keycodes_identity,
+			.handle_hotkeys = do_nothing_hotkeys,
+			.render_screen = do_nothing,
+			.recalculate_mouse_probe = recalculate_mouse_probe_identity,
+			.recalculate_tooltip_probe = recalculate_mouse_probe_identity,
+			.on_game_state_update = do_nothing,
+		};
+	} break;
+	case scene_id::in_game_basic:
 	{
 		state.current_scene = scene_properties{
 			.id = scene_id::in_game_basic,
@@ -26,12 +48,18 @@ void switch_scene(sys::state& state, scene_id ui_scene) {
 			.lbutton_up = do_nothing,
 			.keycode_mapping = replace_keycodes_identity,
 			.handle_hotkeys = in_game_hotkeys,
-			.render_screen = do_nothing,
+			.render_screen = render_module_contents,
 			.recalculate_mouse_probe = recalculate_mouse_probe_identity,
 			.recalculate_tooltip_probe = recalculate_mouse_probe_identity,
+			.on_scroll = in_game_scroll,
 			.on_game_state_update = do_nothing,
 		};
 		// move scene ui windows to front here
+
+		{
+			auto ptr = alice_ui::display_at_front<alice_ui::make_tool_pane_main_panel>(state);
+			ptr->base_data.size.y = int16_t(state.ui_state.root->base_data.size.y - ptr->base_data.position.y);
+		}
 	} break;
 	case scene_id::count: // this should never happen
 		assert(false);
@@ -43,6 +71,48 @@ void switch_scene(sys::state& state, scene_id ui_scene) {
 
 void do_nothing(sys::state& state) { }
 void do_nothing_screen(sys::state& state, int32_t x, int32_t y, sys::key_modifiers mod) { }
+
+void render_module_contents(sys::state& state) {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glUseProgram(state.open_gl.ui_shader_program);
+	glUniform1i(state.open_gl.ui_shader_texture_sampler_uniform, 0);
+	glUniform1i(state.open_gl.ui_shader_secondary_texture_sampler_uniform, 1);
+	glUniform1f(state.open_gl.ui_shader_screen_width_uniform, float(state.x_size) / state.user_settings.ui_scale);
+	glUniform1f(state.open_gl.ui_shader_screen_height_uniform, float(state.y_size) / state.user_settings.ui_scale);
+	glUniform1f(state.open_gl.ui_shader_gamma_uniform, 1.0f);
+	glViewport(0, 0, state.x_size, state.y_size);
+	glDepthRange(-1.0f, 1.0f);
+
+
+	glBindVertexArray(state.open_gl.global_square_vao);
+	glBindVertexBuffer(0, state.open_gl.global_square_buffer, 0, sizeof(GLfloat) * 4);
+	glUniform4f(state.open_gl.ui_shader_d_rect_uniform, 0.0f, 0.0f, float(state.x_size) / state.user_settings.ui_scale, float(state.y_size) / state.user_settings.ui_scale);
+	GLuint subroutines[2] = { 0, 27 };
+	glUniform2ui(state.open_gl.ui_shader_subroutines_index_uniform, subroutines[0], subroutines[1]);
+
+	auto half_x = int32_t(float(state.x_size) / state.user_settings.ui_scale) / 2;
+	auto half_y = int32_t(float(state.y_size) / state.user_settings.ui_scale) / 2;
+
+	glUniform3f(state.open_gl.ui_shader_inner_color_uniform, float(state.x_offset - half_x), float(state.y_offset - half_y), 0.0f);
+	glUniform1f(state.open_gl.ui_shader_border_size_uniform, float(state.zoom));
+
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void in_game_scroll(sys::state& state, int32_t x, int32_t y, sys::key_modifiers mod, float amount) {
+	//auto old_x_center = ;
+	if(amount < 0 && state.zoom > 4) {
+		state.zoom /= 2;
+		state.x_offset /= 2;
+		state.y_offset /= 2;
+	}
+	if(amount > 0 && state.zoom < 128) {
+		state.zoom *= 2;
+		state.x_offset *= 2;
+		state.y_offset *= 2;
+	}
+}
 
 float get_effects_volume(sys::state& state) {
 	return state.user_settings.effects_volume * state.user_settings.master_volume;
@@ -200,12 +270,44 @@ void in_game_hotkeys(sys::state& state, sys::virtual_key keycode, sys::key_modif
 		if(keycode == sys::virtual_key::ESCAPE) {
 			alice_ui::display_at_front<alice_ui::make_main_menu_base>(state);
 		}
-		if(keycode == sys::virtual_key::LEFT || keycode == sys::virtual_key::RIGHT || keycode == sys::virtual_key::UP || keycode == sys::virtual_key::DOWN) {
+		if(keycode == sys::virtual_key::A)
+			keycode = sys::virtual_key::LEFT;
+		if(keycode == sys::virtual_key::W)
+			keycode = sys::virtual_key::UP;
+		if(keycode == sys::virtual_key::S)
+			keycode = sys::virtual_key::DOWN;
+		if(keycode == sys::virtual_key::D)
+			keycode = sys::virtual_key::RIGHT;
+
+		if(keycode == sys::virtual_key::LEFT || keycode == sys::virtual_key::HOME || keycode == sys::virtual_key::RIGHT || keycode == sys::virtual_key::UP || keycode == sys::virtual_key::DOWN) {
 			if(state.ui_state.mouse_sensitive_target) {
 				state.ui_state.mouse_sensitive_target->set_visible(state, false);
 				state.ui_state.mouse_sensitive_target = nullptr;
 			}
 		}
+
+		if(keycode == sys::virtual_key::LEFT) {
+			auto xamount = int32_t(float(state.x_size) / state.user_settings.ui_scale) / 4;
+			state.x_offset -= xamount;
+		}
+		if(keycode == sys::virtual_key::RIGHT) {
+			auto xamount = int32_t(float(state.x_size) / state.user_settings.ui_scale) / 4;
+			state.x_offset += xamount;
+		}
+		if(keycode == sys::virtual_key::UP) {
+			auto yamount = int32_t(float(state.y_size) / state.user_settings.ui_scale) / 4;
+			state.y_offset -= yamount;
+		}
+		if(keycode == sys::virtual_key::DOWN) {
+			auto yamount = int32_t(float(state.y_size) / state.user_settings.ui_scale) / 4;
+			state.y_offset += yamount;
+		}
+		if(keycode == sys::virtual_key::HOME) {
+			state.y_offset = 0;
+			state.x_offset = 0;
+		}
+
+		sound::play_interface_sound(state, sound::get_click_sound(state), state.user_settings.interface_volume * state.user_settings.master_volume);
 	}
 }
 

@@ -3,6 +3,7 @@
 #include <vector>
 #include "unordered_dense.h"
 #include "dcon_generated_ids.hpp"
+#include "constants.hpp"
 
 namespace sys {
 struct state; // this is here simply to declare the state struct in a very general location
@@ -283,6 +284,17 @@ struct aui_pending_bytes {
 	char const* data = nullptr;
 	size_t size = 0;
 };
+
+struct wire {
+	struct position {
+		int16_t x;
+		int16_t y;
+	};
+	std::optional<position> start;
+	std::optional<position> end;
+};
+
+using component_type = std::variant<std::monostate, basic_component_type, wire>;
 
 } // namespace sys
 

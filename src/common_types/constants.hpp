@@ -3,6 +3,25 @@
 #include <iterator>
 
 namespace sys {
+
+enum class wire_colors : uint8_t {
+	amber = 0,
+	green = 1,
+	red = 2,
+	blue = 3,
+	sky_blue = 4,
+	violet = 5,
+	pink = 6,
+	lime = 7,
+	teal = 8,
+	white = 9
+};
+constexpr inline uint8_t max_wire_color = 9;
+
+enum class basic_component_type : uint8_t {
+	diode, enable_high_transistor, enable_low_transistor
+};
+
 enum class virtual_key : uint8_t {
 	NONE = 0x00,
 	LBUTTON = 0x01,

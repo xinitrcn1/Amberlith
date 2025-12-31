@@ -39,6 +39,7 @@ list(APPEND PROGRAM_CORE_SOURCES_LIST
 	"src/lunasvg/plutovg-rasterize.c"
 	"src/lunasvg/plutovg-surface.c"
 	"src/gui/main_menu.cpp"
+	"src/gui/tool_pane.cpp"
 )
 set_source_files_properties(src/lunasvg/plutovg-blend.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 set_source_files_properties(src/lunasvg/plutovg-canvas.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)

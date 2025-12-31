@@ -578,6 +578,12 @@ public:
 	void render(sys::state& state, int32_t x, int32_t y) noexcept override;
 };
 
+class template_icon_button_ci : public template_icon_button {
+public:
+	ogl::color3f icon_color;
+	void render(sys::state& state, int32_t x, int32_t y) noexcept override;
+};
+
 class template_toggle_button : public ui::element_base {
 protected:
 	std::string cached_text;
@@ -946,5 +952,10 @@ int8_t cmp3(T const& a, T const& b) {
 text::alignment convert_align(template_project::aui_text_alignment a);
 
 std::unique_ptr<ui::element_base> make_main_menu_base(sys::state& state);
+std::unique_ptr<ui::element_base> make_tool_pane_main_panel(sys::state& state);
+
+std::string_view basic_component_to_name(sys::basic_component_type type);
+int32_t basic_component_to_icon(sys::state& state, sys::basic_component_type type);
+int32_t basic_component_to_color(sys::state& state, sys::basic_component_type type);
 
 }
